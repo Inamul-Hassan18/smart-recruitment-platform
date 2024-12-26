@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Job Application</title>
+    <link rel="stylesheet" href="30style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnyO-Y_sfcMZGaQPY8X-v5wTeFdgP1VKA",
+            authDomain: "hexaware-39417.firebaseapp.com",
+            projectId: "hexaware-39417",
+            storageBucket: "hexaware-39417.appspot.com",
+            messagingSenderId: "118281921141",
+            appId: "1:118281921141:web:f5382e3ef5c5722a838e3c",
+            measurementId: "G-F1LF9Z7GYS"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        async function fetchCategories() {
+            const categorySelect = document.getElementById('jobCategory');
+            try {
+                const querySnapshot = await getDocs(collection(db, "categories"));
+                categorySelect.innerHTML = '<option value="" disabled selected>Select Job Category</option>'; 
+
+                const uniqueCategories = new Set();
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.categoryName) {
+                        uniqueCategories.add(data.categoryName);
+                    }
+                });
+
+                uniqueCategories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category; 
+                    option.textContent = category; 
+                    categorySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching categories: ", error);
+                displayError("Error fetching categories: " + error.message);
+            }
+        }
+        
+        async function fetchJobPostings() {
+            const jobSelect = document.getElementById('jobPosting');
+            try {
+                const querySnapshot = await getDocs(collection(db, "jobs"));
+                jobSelect.innerHTML = '<option value="" disabled selected>Select Job Posting</option>';
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.jobTitle) {
+                        const option = document.createElement('option');
+                        option.value = data.jobTitle; 
+                        option.textContent = data.jobTitle; 
+                        jobSelect.appendChild(option);
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching job postings: ", error);
+                displayError("Error fetching job postings: " + error.message);
+            }
+        }
+        
+        // Function to display error messages
+        function displayError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('d-none'); // Show error div
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCategories();
+            fetchJobPostings();
+        
+            document.getElementById('jobApplicationForm').addEventListener('submit', async (event) => {
+                event.preventDefault(); 
+        
+                const jobPosting = document.getElementById('jobPosting').value;
+                const jobCategory = document.getElementById('jobCategory').value;
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const address = document.getElementById('address').value;
+                const city = document.getElementById('city').value;
+                const postalCode = document.getElementById('postalCode').value;
+                const highestQualification = document.getElementById('highestQualification').value;
+                const yearOfPassing = document.getElementById('yearOfPassing').value;
+                const resumeLink = document.getElementById('resumeLink').value;
+
+                const applicationData = {
+                    jobPosting,
+                    jobCategory,
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    address,
+                    city,
+                    postalCode,
+                    highestQualification,
+                    yearOfPassing,
+                    resumeURL: resumeLink, 
+                    submittedAt: new Date(),
+                };
+
+                try {
+                    const docRef = await addDoc(collection(db, "jobApplications"), applicationData);
+                    alert("Application submitted successfully! ID: " + docRef.id);
+                    document.getElementById('jobApplicationForm').reset(); 
+                } catch (error) {
+                    console.error("Error submitting application: ", error);
+                    displayError("Error submitting application: " + error.message);
+                }
+            });
+        });
+    </script>
+</head>
+<body style="padding-top: 80px; background-image: linear-gradient(135deg, #5f8e8a, #9d69e7);">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background-color: #5f8e8a; background-image: linear-gradient(135deg, #5f8e8a, #9d69e7);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="img/logo2.png" alt="Logo" width="200" height="80" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">Jobs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Job Application Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="col-lg-8 mx-auto bg-white p-5 rounded shadow">
+                <h2 class="text-center mb-4">Job Application Form</h2>
+                <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div> <!-- Error message div -->
+                <form id="jobApplicationForm" enctype="multipart/form-data" novalidate>
+                    <!-- Job Posting -->
+                    <h4 class="mb-3">Select Job Posting</h4>
+                    <div class="mb-3">
+                        <label for="jobPosting" class="form-label">Job Posting</label>
+                        <select class="form-control" id="jobPosting" required>
+                            <option value="" disabled selected>Select Job Posting</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a job posting.
+                        </div>
+                    </div>
+    
+                    <!-- Job Category -->
+                    <h4 class="mb-3">Select Job Role</h4>
+                    <div class="mb-3">
+                        <label for="jobCategory" class="form-label">Job Role</label>
+                        <select class="form-control" id="jobCategory" required>
+                            <option value="" disabled selected>Select Job Role</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a job role.
+                        </div>
+                    </div>
+    
+                    <!-- Personal Details -->
+                    <h4 class="mb-3">Personal Details</h4>
+                    <div class="row g-3">
+                        <div class="col-sm">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid first name.
+                            </div>
+                        </div>
+                        <div class="col-sm">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid last name.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid email address.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="phone" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid phone number.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="address" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid address.
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid city.
+                            </div>
+                        </div>
+                        <div class="col-sm">
+                            <label for="postalCode" class="form-label">Postal Code</label>
+                            <input type="text" class="form-control" id="postalCode" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid postal code.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="highestQualification" class="form-label">Highest Qualification</label>
+                        <input type="text" class="form-control" id="highestQualification" required>
+                        <div class="invalid-feedback">
+                            Please provide your highest qualification.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="yearOfPassing" class="form-label">Year of Passing</label>
+                        <input type="text" class="form-control" id="yearOfPassing" required>
+                        <div class="invalid-feedback">
+                            Please provide your year of passing.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="resumeLink" class="form-label">Resume Link</label>
+                        <input type="url" class="form-control" id="resumeLink" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid URL for your resume.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybL5F9B61L3nE4fN8FF9Uu0f0NuxhvD5C1cEnT12jCDZ5gB5yR" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-Y65FZV1OMnq0/CUe8c2vS3GeL37g5Edp7/rf/V3IF+UE3WthQybgm2UuP+zMQChL" crossorigin="anonymous"></script>
+</body>
+</html>
